@@ -8,9 +8,9 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 A Flutter plugin for sharing content from the Flutter app via the platform share sheet.
                        DESC
-  s.homepage         = 'https://github.com/flutter/plugins/tree/master/packages/share'
+  s.homepage         = 'https://github.com/Alezhka/flutter_share'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Flutter Team' => 'flutter-dev@googlegroups.com' }
+  s.author           = { 'Aleksei Sturov' => 'alezhk@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'

@@ -1,8 +1,6 @@
 name: share
-description: Flutter plugin for sharing content via the platform share UI, using
-  the ACTION_SEND intent on Android and UIActivityViewController on iOS.
-  Receiving ACTION_SEND + ACTION_SEND_MULTIPLE on Android
-version: 0.6.0
+description: Flutter plugin for sharing content via the platform share UI.
+version: 0.6.0+1
 author: Aleksei Sturov
 homepage: https://github.com/Alezhka/flutter_share
 

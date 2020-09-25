@@ -1,20 +1,10 @@
-# Form important!
-Completely rewritten android code and added getting the result on IOS.
-Now getting the result works correctly on android, ios.
-Changed the design of calling the API library.
+# Share anything plugin
 
-# Share Anything plugin
-
-A Flutter plugin to share content from your Flutter app via the platform's share dialog and receive shares from other apps on the platform (currently only on Android).  
-
-Wraps the ACTION_SEND Intent, and ACTION_SEND + ACTION_SEND_MULTIPLE IntentReceiver on Android
- and UIActivityViewController on iOS.
-
-# this fork fixes v2 embedding
+A Flutter plugin to share content from your Flutter app via the platform's share dialog and receive shares from other apps on the platform with support result!
 
 ## Usage
 
-To use this plugin
+To use this plugin:
 
 1. add share
 ```
@@ -28,17 +18,23 @@ To use this plugin
 ```
 import 'package:share/share.dart';
 ```
- then, just instantiate a Share with the corresponding named constructor, with the relevant named arguments:
+ then, just call Share.share() with share item:
 ```
-ShareItem.plainText(text: <String>, title: <String>);
-ShareItem.file(path: <String>, mimeType: ShareType, title: , text: );
-ShareItem.image(path: , mimeType: , title: , text: );
-ShareItem.multiple(shares: List<Share>, mimeType: , title: );
+ShareItem.plainText(String text, String title);
+ShareItem.file(String path, ShareType mimeType, String title, String text);
+ShareItem.image(String path, ShareType mimeType, title: <String>, String text);
+ShareItem.multiple(List<Share> shares, ShareType mimeType, String title);
 ```
 with only the first shown argument required,
 and then call `Share.share(ShareItem item, Rect sharePositionOrigin)`
 
 3. to receive any kind of share, just listen `Share.onShareReceived`.
+
+## Platform Support
+
+| Android | iOS | MacOS | Web |
+|:-------:|:---:|:-----:|:---:|
+|    ✔️    |  ✔️  |       |     |
 
 ## Example
 

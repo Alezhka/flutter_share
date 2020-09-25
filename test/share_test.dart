@@ -16,31 +16,30 @@ void main() {
   setUp(() {
     mockChannel = new MockMethodChannel();
     // Re-pipe to mockito for easier verifies.
-    Share.channel.setMockMethodCallHandler((MethodCall call) {
-      mockChannel.invokeMethod(call.method, call.arguments);
+    Share.methodChannel.setMockMethodCallHandler((MethodCall call) {
+      return mockChannel.invokeMethod(call.method, call.arguments);
     });
   });
 
   test('sharing null fails', () {
     expect(
-      () => Share.plainText(text:null).share(),
-      throwsA(const isInstanceOf<AssertionError>()),
+      () => Share.share(ShareItem.plainText(text: null)),
+      throwsA(isA<AssertionError>()),
     );
     verifyZeroInteractions(mockChannel);
   });
 
   test('sharing empty fails', () {
     expect(
-      () => Share.plainText(text:'').share(),
-      throwsA(const isInstanceOf<AssertionError>()),
+      () => Share.share(ShareItem.plainText(text:'')),
+      throwsA(isA<AssertionError>()),
     );
     verifyZeroInteractions(mockChannel);
   });
 
   test('sharing origin sets the right params', () async {
-    await Share.plainText(text:
-      'some text to share').share(
-      sharePositionOrigin: new Rect.fromLTWH(1.0, 2.0, 3.0, 4.0),
+    await Share.share(ShareItem.plainText(text: 'some text to share'), 
+      sharePositionOrigin: Rect.fromLTWH(1.0, 2.0, 3.0, 4.0)
     );
     verify(mockChannel.invokeMethod('share', <String, dynamic>{
       'text': 'some text to share',
@@ -53,17 +52,15 @@ void main() {
 
   test('sharing image with empty mimeType', () {
     expect(
-      () =>
-          Share.image(path: "content://0@media/external/images/media/2129").share(),
-      throwsA(const isInstanceOf<AssertionError>()),
+      () => Share.share(ShareItem.image(path: "content://0@media/external/images/media/2129")),
+      throwsA(isA<AssertionError>()),
     );
     verifyZeroInteractions(mockChannel);
   });
 
   test('sharing image', () async {
-    await Share.image(path: "content://0@media/external/images/media/2129",
-        mimeType: ShareType.TYPE_IMAGE).share(
-      sharePositionOrigin: new Rect.fromLTWH(1.0, 2.0, 3.0, 4.0),
+    await Share.share(ShareItem.image(path: "content://0@media/external/images/media/2129", mimeType: ShareType.TYPE_IMAGE),
+      sharePositionOrigin: Rect.fromLTWH(1.0, 2.0, 3.0, 4.0),
     );
     verify(mockChannel.invokeMethod('share', <String, dynamic>{
       'path': "content://0@media/external/images/media/2129",

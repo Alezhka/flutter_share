@@ -19,13 +19,13 @@ class DemoApp extends StatefulWidget {
 class DemoAppState extends State<DemoApp> {
   
   String _text = '';
-  String _shared = '';
+  ShareItem _shared;
 
   @override
   void initState() {
     Share.onShareReceived.listen((shared) {
-      debugPrint("Share received - $shared");
-      setState(() { _shared = shared.toString(); });
+      debugPrint("Share received - ${shared.toString()}");
+      setState(() { _shared = shared; });
     });
     super.initState();
   }
@@ -68,12 +68,13 @@ class DemoAppState extends State<DemoApp> {
                             // has its position and size after it's built.
                             final RenderBox box = context.findRenderObject();
                             Share.share(ShareItem.plainText(text: _text),
-                                sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+                              sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size
+                            );
                           },
                   );
                 },
               ),
-              Text(_shared),
+              Text(_shared.toString()),
             ],
           ),
         )

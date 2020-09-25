@@ -13,17 +13,21 @@ import 'package:meta/meta.dart' show visibleForTesting;
 import 'share_item.dart';
 import 'share_type.dart';
 
+export 'share_item.dart';
+export 'share_type.dart';
 
 /// Plugin for summoning a platform share sheet.
 class Share {
 
   /// [MethodChannel] used to communicate with the platform side.
   @visibleForTesting
-  static const MethodChannel _methodChannel = const MethodChannel('plugins.flutter.io/share');
-  static const EventChannel _eventChannel = const EventChannel('plugins.flutter.io/receiveshare');
+  static const MethodChannel methodChannel = const MethodChannel('plugins.flutter.io/share');
+  /// [MethodChannel] used to get sharing result with the platform side.
+  @visibleForTesting
+  static const EventChannel eventChannel = const EventChannel('plugins.flutter.io/receiveshare');
 
   static Stream<ShareItem> get onShareReceived =>
-      _eventChannel.receiveBroadcastStream().map(_toReceiveShare);
+      eventChannel.receiveBroadcastStream().map(_toShareItem);
 
   static Future<void> share(ShareItem item, {Rect sharePositionOrigin}) {
     final Map<String, dynamic> params = <String, dynamic>{
@@ -47,6 +51,7 @@ class Share {
     switch (item.mimeType) {
       case ShareType.TYPE_PLAIN_TEXT:
         if (item.isMultiple) {
+          params[ShareItem.COUNT] = item.shares.length;
           for(var i = 0; i < item.shares.length; i++) {
             params["$i"] = item.shares[i].text;
           }
@@ -58,6 +63,7 @@ class Share {
       case ShareType.TYPE_IMAGE:
       case ShareType.TYPE_FILE:
         if (item.isMultiple) {
+          params[ShareItem.COUNT] = item.shares.length;
           for (var i = 0; i < item.shares.length; i++) {
             params["$i"] = item.shares[i].path;
           }
@@ -71,11 +77,10 @@ class Share {
 
     }
 
-    return _methodChannel.invokeMethod('share', params);
+    return methodChannel.invokeMethod('share', params);
   }
 
-  static ShareItem _toReceiveShare(dynamic shared) {
-    debugPrint("Share received - $shared");
+  static ShareItem _toShareItem(dynamic shared) {
     return ShareItem.fromReceived(shared);
   }
 

@@ -29,32 +29,12 @@ public class SharePlugin: FlutterPlugin, MethodCallHandler {
   /// when the Flutter Engine is detached from the Activity
   private lateinit var methodChannel : MethodChannel
   private lateinit var eventChannel : EventChannel
-  private lateinit var context: Context
-  private var activity: Activity? = null
+  private var context: Context? = null
   private val receiver = ShareReceiver()
 
   private val messageStreamHandler = MessageStreamHandler()
 
-  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-  // plugin registration via this function while apps migrate to use the new Android APIs
-  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-  //
-  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-  // in the same class.
   companion object {
-    @JvmStatic
-    fun registerWith(registrar: Registrar) {
-      val instance = SharePlugin()
-      instance.context = registrar.context()
-      instance.activity = registrar.activity()
-      instance.methodChannel = MethodChannel(registrar.messenger(), CHANNEL_METHOD)
-      instance.methodChannel.setMethodCallHandler(instance)
-      instance.eventChannel = EventChannel(registrar.messenger(), CHANNEL_RECEIVER)
-      instance.eventChannel.setStreamHandler(instance.messageStreamHandler)
-    }
 
     private const val CHANNEL_METHOD = "plugins.flutter.io/share"
     private const val CHANNEL_RECEIVER = "plugins.flutter.io/receiveshare"
@@ -91,20 +71,6 @@ public class SharePlugin: FlutterPlugin, MethodCallHandler {
     }
   }
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    methodChannel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), CHANNEL_METHOD)
-    methodChannel.setMethodCallHandler(this);
-    eventChannel = EventChannel(flutterPluginBinding.flutterEngine.dartExecutor, CHANNEL_RECEIVER)
-    eventChannel.setStreamHandler(messageStreamHandler)
-  }
-
-  /*
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    instance.context = binding.activity
-    instance.activity = binding.activity
-  }
-  */
-
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if (call.method.equals("share")) {
       require(call.arguments is Map<*, *>) { "Map argument expected" }
@@ -138,9 +104,18 @@ public class SharePlugin: FlutterPlugin, MethodCallHandler {
     }
   }
 
+  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    methodChannel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), CHANNEL_METHOD)
+    methodChannel.setMethodCallHandler(this);
+    eventChannel = EventChannel(flutterPluginBinding.flutterEngine.dartExecutor, CHANNEL_RECEIVER)
+    eventChannel.setStreamHandler(messageStreamHandler)
+    context = flutterPluginBinding.getApplicationContext()
+  }
+
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     methodChannel.setMethodCallHandler(null)
-    context.unregisterReceiver(receiver)
+    context?.unregisterReceiver(receiver)
+    context = null
   }
 
   private fun share(text: String, shareType: ShareType, title: String, packageName: String) {
@@ -211,23 +186,25 @@ public class SharePlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun shareNow(target: Intent, data: Map<String, Any>) {
+    if(context == null) {
+      return
+    }
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
       ShareReceiver.callback = { packageName ->
         messageStreamHandler.send(data.plus(PACKAGE to packageName))
       }
-      val sender = ShareReceiver.getSharingSenderIntent(context)
-      val chooserIntent = Intent.createChooser(target, null /* dialog title optional */, sender)
-      activity?.startActivity(chooserIntent)
+      val sender = ShareReceiver.getSharingSenderIntent(context!!)
+      val chooserIntent = Intent.createChooser(target, null /* dialog title optional */, sender).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+      context?.startActivity(chooserIntent)
       return
     }
 
     val chooserIntent = Intent.createChooser(target, null /* dialog title optional */)
-    if (activity != null) {
-      activity!!.startActivity(chooserIntent)
-    } else {
-      chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      context.startActivity(chooserIntent)
-    }
+    chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context?.startActivity(chooserIntent)
     messageStreamHandler.send(data.plus(PACKAGE to "unknown"))
   }
 

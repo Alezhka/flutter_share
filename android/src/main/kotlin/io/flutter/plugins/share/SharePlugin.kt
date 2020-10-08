@@ -1,5 +1,6 @@
 package io.flutter.plugins.share
 
+import java.lang.Exception;
 import android.annotation.TargetApi
 import android.app.Activity
 import android.app.PendingIntent
@@ -114,7 +115,11 @@ public class SharePlugin: FlutterPlugin, MethodCallHandler {
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     methodChannel.setMethodCallHandler(null)
-    context?.unregisterReceiver(receiver)
+    try{ 
+      context?.unregisterReceiver(receiver)
+    }catch (e: Exception){
+      // already unregistered
+    }
     context = null
   }
 

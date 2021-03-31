@@ -12,11 +12,11 @@ class ShareItem {
   static const String IS_MULTIPLE = "is_multiple";
   static const String COUNT = "count";
 
-  final ShareType mimeType;
-  final String title;
-  final String text;
-  final String path;
-  final String package;
+  final ShareType? mimeType;
+  final String? title;
+  final String? text;
+  final String? path;
+  final String? package;
   final List<ShareItem> shares;
 
   bool get isNull => this.mimeType == null;
@@ -35,40 +35,33 @@ class ShareItem {
   const ShareItem.plainText({
     this.title,
 	  this.package,
-    this.text
-  }) : assert(text != null),
-       this.mimeType = ShareType.TYPE_PLAIN_TEXT,
+    required this.text
+  }) : this.mimeType = ShareType.TYPE_PLAIN_TEXT,
        this.path = '',
        this.shares = const[];
 
   const ShareItem.file({
     this.mimeType = ShareType.TYPE_FILE,
     this.title,
-    this.path,
+    required this.path,
 	  this.package,
     this.text = ''
-  }) : assert(mimeType != null),
-       assert(path != null),
-       this.shares = const[];
+  }) : this.shares = const[];
 
   const ShareItem.image({
     this.mimeType = ShareType.TYPE_IMAGE,
     this.title,
-    this.path,
+    required this.path,
 	  this.package,
     this.text = ''
-  }) : assert(mimeType != null),
-       assert(path != null),
-       this.shares = const[];
+  }) : this.shares = const[];
 
   const ShareItem.multiple({
     this.mimeType = ShareType.TYPE_FILE,
     this.title,
 	  this.package='',
-    this.shares
-  }) : assert(mimeType != null),
-       assert(shares != null),
-       this.text = '',
+    required this.shares
+  }) : this.text = '',
        this.path = '';
 
 
@@ -83,7 +76,6 @@ class ShareItem {
     }
   }
 
-  // ignore: missing_return
   static ShareItem _fromReceivedSingle(Map received, ShareType type, String package) {
     switch (type) {
       case ShareType.TYPE_PLAIN_TEXT:
@@ -99,8 +91,6 @@ class ShareItem {
             text: received[TEXT]
           );
         }
-        break;
-
       case ShareType.TYPE_IMAGE:
         if (received.containsKey(TITLE)) {
           if (received.containsKey(TEXT)) {
@@ -122,8 +112,6 @@ class ShareItem {
             path: received[PATH]
           );
         }
-        break;
-
       case ShareType.TYPE_FILE:
         if (received.containsKey(TITLE)) {
           if (received.containsKey(TEXT)) {
@@ -146,18 +134,19 @@ class ShareItem {
             path: received[PATH]
           );
         }
-        break;
     }
+
+    throw Exception("Undefined share item");
 
   }
 
   static ShareItem _fromReceivedMultiple(Map received, ShareType type, String package) {
-    final int count = received.containsKey(COUNT) ? received[COUNT] : 0;
-    final List<ShareItem> receivedShares = new List();
+    final count = received.containsKey(COUNT) ? received[COUNT] : 0;
+    final receivedShares = <ShareItem>[];
     for (var i = 0; i < count; i++) {
       receivedShares.add(ShareItem.file(path: received["$i"]));
     }
-    String title;
+    String? title;
     if (received.containsKey(TITLE)) {
       title = received[TITLE];
     }

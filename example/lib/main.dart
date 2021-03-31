@@ -19,7 +19,7 @@ class DemoApp extends StatefulWidget {
 class DemoAppState extends State<DemoApp> {
   
   String _text = '';
-  ShareItem _shared;
+  ShareItem? _shared;
 
   @override
   void initState() {
@@ -54,7 +54,7 @@ class DemoAppState extends State<DemoApp> {
               Padding(padding: EdgeInsets.only(top: 24.0)),
               Builder(
                 builder: (BuildContext context) {
-                  return RaisedButton(
+                  return ElevatedButton(
                     child: Text('Share'),
                     onPressed: _text.isEmpty
                         ? null
@@ -66,15 +66,19 @@ class DemoAppState extends State<DemoApp> {
                             // RenderObject in its descendent tree when it's not
                             // a RenderObjectWidget. The RaisedButton's RenderObject
                             // has its position and size after it's built.
-                            final RenderBox box = context.findRenderObject();
+                            final RenderObject? box = context.findRenderObject();
+                            if(box !is RenderBox) {
+                              return;
+                            }
+                            final proof = box as RenderBox;
                             Share.share(ShareItem.plainText(text: _text),
-                              sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size
+                              sharePositionOrigin: proof.localToGlobal(Offset.zero) & proof.size
                             );
                           },
                   );
                 },
               ),
-              Text(_shared.toString()),
+              Text(_shared?.toString() ?? 'null'),
             ],
           ),
         )

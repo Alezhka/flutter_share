@@ -1,6 +1,9 @@
 name: share_example
 description: Demonstrates how to use the share plugin.
 
+environment:
+  sdk: '>=2.12.2 <3.0.0'
+  
 dependencies:
   flutter:
     sdk: flutter

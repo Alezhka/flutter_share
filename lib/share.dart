@@ -29,7 +29,7 @@ class Share {
   static Stream<ShareItem> get onShareReceived =>
       eventChannel.receiveBroadcastStream().map(_toShareItem);
 
-  static Future<void> share(ShareItem item, {Rect sharePositionOrigin}) {
+  static Future<void> share(ShareItem item, {Rect? sharePositionOrigin}) {
     final Map<String, dynamic> params = <String, dynamic>{
       ShareItem.TYPE: item.mimeType.toString(),
       ShareItem.IS_MULTIPLE: item.isMultiple
@@ -40,11 +40,11 @@ class Share {
       params['originWidth'] = sharePositionOrigin.width;
       params['originHeight'] = sharePositionOrigin.height;
     }
-    if (item.title != null && item.title.isNotEmpty) {
+    if (item.title?.isNotEmpty == true) {
       params[ShareItem.TITLE] = item.title;
     }
 
-	  if (item.package != null && item.package.isNotEmpty) {
+	  if (item.package?.isNotEmpty == true) {
       params[ShareItem.PACKAGENAME] = item.package;
     }
 	
@@ -69,7 +69,7 @@ class Share {
           }
         } else {
           params[ShareItem.PATH] = item.path;
-          if (item.text != null && item.text.isNotEmpty) {
+          if (item.text?.isNotEmpty == true) {
             params[ShareItem.TEXT] = item.text;
           }
         }
